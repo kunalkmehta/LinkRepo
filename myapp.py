@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
@@ -37,9 +37,53 @@ def hello_world():
 
     #return "<p>Hello, World!</p>"
 
-@app.route("/about")
-def about():
-    return "<p>This is About me page</p>"
+@app.route("/getinfo/title/<string:s>")
+def getTitle(s):
+
+    filter_list = link_list.query.filter_by(title=s).all()
+    #filter_list = db.session.query(link_list).filter_by(title='Prime').all()
+    if len (filter_list) == 0:
+        return "<p>No value exist</p>"
+    else: 
+        for i in range(len(filter_list)):
+            title = filter_list[i].title
+            category = filter_list[i].category
+            link = filter_list[i].link
+
+            result = {
+                'Title': title,
+                'Category': category,
+                'Link': link
+            }
+
+    #return jsonify (filter_list)
+    #return render_template('test.html', filter_list = filter_list)
+    return jsonify(result)
+
+@app.route("/getinfo/category/<string:s>")
+def getCategory(s):
+    result_list = []
+    filter_list = link_list.query.filter_by(category=s).all()
+    #filter_list = db.session.query(link_list).filter_by(title='Prime').all()
+    if len (filter_list) == 0:
+        return "<p>No value exist</p>"
+    else: 
+        for i in range(len(filter_list)):
+            title = filter_list[i].title
+            category = filter_list[i].category
+            link = filter_list[i].link
+
+            result = {
+                'Title': title,
+                'Category': category,
+                'Link': link
+            }
+            result_list.append(result)
+    #return jsonify (filter_list)
+    #return render_template('test.html', filter_list = filter_list)
+    return jsonify(result_list)
+
+
 
 @app.route("/show")
 def show_all():
@@ -52,7 +96,7 @@ def show_all():
 def update(link_id):
     if request.method == 'POST':
         link_select = db.get_or_404(link_list, link_id)
-        link_select.category = title = request.form['category']
+        link_select.category = request.form['category']
         link_select.title = request.form['title']
         link_select.link = request.form['link']
         db.session.commit()
